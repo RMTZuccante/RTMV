@@ -17,7 +17,7 @@ public class RealTimeMatrixViewer extends Application {
         stage.setTitle(TITLE);
         stage.setFullScreenExitHint("Press ESC to exit fullscreen");
         //stage.setFullScreen(true);
-        stage.setAlwaysOnTop(true);
+        //stage.setAlwaysOnTop(true);
         GridPane root = new GridPane();
         stage.setScene(new Scene(root));
         stage.show();
