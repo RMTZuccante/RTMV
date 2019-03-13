@@ -24,12 +24,12 @@ public class RealTimeMatrixViewer extends Application {
         stage.setScene(scene);
         stage.show();
         viewer = new Viewer(scene);
-        new Thread(() -> recv()).start();
+        //new Thread(() -> recv()).start();
     }
 
     public void recv() {
         try {
-            for (int i = -3; i <= 3; i++) {
+            for (int i = -3; i <= 3 && !Thread.interrupted(); i++) {
                 for (int j = -3; j <= 3; j++) {
                     viewer.moveRobot(i, j);
                     Thread.sleep(1500);

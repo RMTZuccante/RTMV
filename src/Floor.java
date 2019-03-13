@@ -3,45 +3,45 @@ import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Box;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape3D;
 import javafx.util.Duration;
+
+import java.util.HashMap;
 
 public class Floor extends Group {
     TranslateTransition robotTransition;
     TranslateTransition floorTransition;
-    private Box robot;
+    Pair<Integer, Integer> pos = new Pair<>(0, 0); // (x, y) of the robot
+    private Shape3D robot;
     private ObservableList<Node> child;
     private int size; //Size of a cell
     private Color cellBorder = Color.rgb(60, 63, 66); // Color of the cell border
-    private Pair<Integer, Integer> pos = new Pair<>(0, 0); // (x, y) of the robot
+    private HashMap<Pair<Integer, Integer>, Cell> cells = new HashMap<>(20);
 
-    Floor(Box robot, int u) {
+    Floor(Shape3D robot, int u) {
         size = u;
         robotTransition = new TranslateTransition(new Duration(1000), robot);
-        floorTransition = new TranslateTransition(new Duration(1000), this);
+        floorTransition = new TranslateTransition(new Duration(500), this);
         setScaleY(-1);
         child = getChildren();
         this.robot = robot;
         child.add(robot);
-        for (int i = -3; i <= 3; i++) {
-            for (int j = -3; j <= 3; j++) {
-                addCell(i, j);
-            }
-        }
+        addCell(0, 0);
+        System.out.println(pos);
     }
 
     public void addCell(int x, int y) {
-        Rectangle r = new Rectangle(x * size - size / 2, y * size - size / 2, size, size);
-        Rectangle mr = new Rectangle(-x * size - size / 2, -y * size - size / 2, size, size);
-        r.setFill(Color.TRANSPARENT);
-        mr.setFill(Color.TRANSPARENT);
-        r.setStroke(cellBorder);
-        child.addAll(r, mr);
+        Rectangle balance = new Rectangle(-x * size - size / 2, -y * size - size / 2, size, size);
+        balance.setFill(Color.TRANSPARENT);
+        Cell c = new Cell(x * size - size / 2, y * size - size / 2, size);
+        c.setColor(cellBorder);
+        child.addAll(c, balance);
         robot.toFront();
+        cells.put(new Pair<>(x, y), c);
     }
 
-    public void place(double height, double width) {
+    public void setSize(double height, double width) {
         setLayoutX(width / 2 + pos.key);
         setLayoutY(height / 2 + pos.value);
     }

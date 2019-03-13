@@ -9,4 +9,9 @@ public class Pair<K, V> {
         key = k;
         value = v;
     }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode() + value.hashCode();
+    }
 }
