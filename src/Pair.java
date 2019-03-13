@@ -3,7 +3,6 @@ public class Pair<K, V> {
     public V value;
 
     Pair() {
-
     }
 
     Pair(K k, V v) {

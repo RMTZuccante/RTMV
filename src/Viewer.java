@@ -1,57 +1,45 @@
-import javafx.event.EventHandler;
-import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.GridPane;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
 
 import java.util.HashMap;
 
-public class Viewer {
+public class Viewer implements ChangeListener<Number> {
     private HashMap<Integer, Floor> floors = new HashMap(2);
     private Box robot;
-    private Group actualFloor;
-    private GridPane pane;
-    private int rot = 0;
     private int floorId = 0;
+    private Scene scene;
+    private Floor floor;
 
-    private EventHandler<KeyEvent> keytype = new EventHandler<KeyEvent>() {
-        @Override
-        public void handle(KeyEvent event) {
-            switch (event.getCode()) {
-                case LEFT:
-                    rot -= 90;
-                    changeFloor(floorId);
-                    break;
-                case RIGHT:
-                    rot += 90;
-                    changeFloor(floorId);
-                    break;
-            }
-        }
-    };
-
-    Viewer(GridPane p) {
-        p.getScene().setOnKeyPressed(keytype);
-        pane = p;
-        p.setAlignment(Pos.CENTER);
-        floors.put(0, new Floor(new Canvas(), 50));
+    Viewer(Scene scene) {
+        this.scene = scene;
+        scene.widthProperty().addListener(this);
+        scene.heightProperty().addListener(this);
         robot = new Box(60, 80, 10);
         PhongMaterial tint = new PhongMaterial();
         tint.setDiffuseColor(Color.rgb(28, 234, 189));
         tint.setSpecularColor(Color.rgb(31, 196, 160));
         robot.setMaterial(tint);
+
+        floors.put(0, new Floor(robot, 100));
         changeFloor(0);
     }
 
     public void changeFloor(int f) {
-        pane.getChildren().remove(actualFloor);
-        actualFloor = new Group(robot, floors.get(f).getCanvas());
-        pane.getChildren().add(actualFloor);
-        actualFloor.setRotate(rot);
-        rot = (int) actualFloor.getRotate();
+        floor = floors.get(f);
+        scene.setRoot(floor);
+        floor.place(scene.getHeight(), scene.getWidth());
+    }
+
+    public void moveRobot(int x, int y) {
+        floors.get(0).moveTo(x, y);
+    }
+
+    @Override
+    public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+        changeFloor(floorId);
     }
 }

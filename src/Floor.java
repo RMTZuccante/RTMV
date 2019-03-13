@@ -1,72 +1,70 @@
-import javafx.application.Platform;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
+import javafx.animation.TranslateTransition;
+import javafx.collections.ObservableList;
+import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 
-public class Floor {
-    Canvas canvas;
-    GraphicsContext graphics;
-    /*Translation to apply to (x, y) coordinates to implement negative values*/
-    Pair<Integer, Integer> negativeTranslation = new Pair<>(0, 0);
-    /*Translation to apply to the parent container to fix its translation when adding cells on the X axys*/
-    Pair<Integer, Integer> planeTranslation = new Pair<>(0, 0);
+public class Floor extends Group {
+    TranslateTransition robotTransition;
+    TranslateTransition floorTransition;
+    private Box robot;
+    private ObservableList<Node> child;
+    private int size; //Size of a cell
+    private Color cellBorder = Color.rgb(60, 63, 66); // Color of the cell border
+    private Pair<Integer, Integer> pos = new Pair<>(0, 0); // (x, y) of the robot
 
-    private int unit;
-    private Paint cellBorder = Color.rgb(60, 63, 66);
-
-    Floor(Canvas canvas, int u) {
-        unit = u * 2;
-        this.canvas = canvas;
-        graphics = canvas.getGraphicsContext2D();
-        canvas.setHeight(unit);
-        canvas.setWidth(unit);
-        canvas.setScaleX(1);
-        canvas.setScaleY(-1);
-        canvas.relocate(-unit / 2, -unit / 2);
-        new Thread(() -> {
-            try {
-                Platform.runLater(() -> drawcell(0, 0));
-                Thread.sleep(1000);
-                Platform.runLater(() -> drawcell(1, 1));
-                Thread.sleep(1000);
-                Platform.runLater(() -> drawcell(2, 0));
-                Thread.sleep(1000);
-                //Platform.runLater(() -> drawcell(-1, 0));
-            } catch (InterruptedException e) {
-
+    Floor(Box robot, int u) {
+        size = u;
+        robotTransition = new TranslateTransition(new Duration(1000), robot);
+        floorTransition = new TranslateTransition(new Duration(1000), this);
+        setScaleY(-1);
+        child = getChildren();
+        this.robot = robot;
+        child.add(robot);
+        for (int i = -3; i <= 3; i++) {
+            for (int j = -3; j <= 3; j++) {
+                addCell(i, j);
             }
-        }).start();
+        }
     }
 
-    public Canvas getCanvas() {
-        return canvas;
+    public void addCell(int x, int y) {
+        Rectangle r = new Rectangle(x * size - size / 2, y * size - size / 2, size, size);
+        Rectangle mr = new Rectangle(-x * size - size / 2, -y * size - size / 2, size, size);
+        r.setFill(Color.TRANSPARENT);
+        mr.setFill(Color.TRANSPARENT);
+        r.setStroke(cellBorder);
+        child.addAll(r, mr);
+        robot.toFront();
     }
 
-    public void drawcell(int x, int y) {
-        x *= unit;
-        y *= unit;
+    public void place(double height, double width) {
+        setLayoutX(width / 2 + pos.key);
+        setLayoutY(height / 2 + pos.value);
+    }
 
-        if (x < 0) {
-            x -= unit;
-            if (-x > negativeTranslation.key) {
-                double w = canvas.getWidth() - negativeTranslation.key;
-                negativeTranslation.key = -x;
-                canvas.setWidth(w + negativeTranslation.key);
-                graphics.translate(negativeTranslation.key, negativeTranslation.value);
-            }
-        } else if (x + unit > canvas.getWidth()) {
-            canvas.setWidth(x + unit);
-            planeTranslation.key = x / 2;
-        }
-        if (y + unit > canvas.getHeight()) {
-            canvas.setHeight(y + unit);
-            canvas.relocate(-unit / 2, -unit / 2 - y);
-            planeTranslation.value = -y / 2;
-        }
-        graphics.setStroke(cellBorder);
-        graphics.strokeRect(x + negativeTranslation.key, y + negativeTranslation.value, unit, unit);
-        canvas.getParent().setTranslateX(planeTranslation.key);
-        canvas.getParent().setTranslateY(planeTranslation.value);
+    public void moveTo(int x, int y) {
+        robotTransition.stop();
+        floorTransition.stop();
+
+        robotTransition.setFromX(pos.key * size);
+        floorTransition.setFromX(-pos.key * size);
+
+        robotTransition.setFromY(pos.value * size);
+        floorTransition.setFromY(pos.value * size);
+        pos.key = x;
+        pos.value = y;
+        robotTransition.setToX(pos.key * size);
+        floorTransition.setToX(-pos.key * size);
+
+        robotTransition.setToY(pos.value * size);
+        floorTransition.setToY(pos.value * size);
+
+
+        robotTransition.play();
+        floorTransition.play();
     }
 }
