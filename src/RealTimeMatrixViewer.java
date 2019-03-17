@@ -20,21 +20,23 @@ public class RealTimeMatrixViewer extends Application {
         //stage.setFullScreen(true);
         //stage.setAlwaysOnTop(true);
         Scene scene = new Scene(new Group());
-        scene.setFill(Color.WHEAT);
+        scene.setFill(Color.WHITE);
         stage.setScene(scene);
         stage.show();
         viewer = new Viewer(scene);
-        //new Thread(() -> recv()).start();
+        new Thread(() -> recv()).start();
     }
 
     public void recv() {
         try {
-            for (int i = -3; i <= 3 && !Thread.interrupted(); i++) {
+            Thread.sleep(1500);
+            viewer.moveRobot(0, 1);
+            /*for (int i = -3; i <= 3 && !Thread.interrupted(); i++) {
                 for (int j = -3; j <= 3; j++) {
                     viewer.moveRobot(i, j);
                     Thread.sleep(1500);
                 }
-            }
+            }*/
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

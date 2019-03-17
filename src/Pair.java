@@ -11,6 +11,11 @@ public class Pair<K, V> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        return o.getClass() == this.getClass() && ((Pair) o).key.equals(key) && ((Pair) o).value.equals(value);
+    }
+
+    @Override
     public int hashCode() {
         return key.hashCode() + value.hashCode();
     }

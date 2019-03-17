@@ -2,8 +2,6 @@ import javafx.animation.TranslateTransition;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape3D;
 import javafx.util.Duration;
 
@@ -16,7 +14,6 @@ public class Floor extends Group {
     private Shape3D robot;
     private ObservableList<Node> child;
     private int size; //Size of a cell
-    private Color cellBorder = Color.rgb(60, 63, 66); // Color of the cell border
     private HashMap<Pair<Integer, Integer>, Cell> cells = new HashMap<>(20);
 
     Floor(Shape3D robot, int u) {
@@ -28,15 +25,18 @@ public class Floor extends Group {
         this.robot = robot;
         child.add(robot);
         addCell(0, 0);
-        System.out.println(pos);
+        addCell(0, 1);
+        addCell(0, 2);
+        cells.get(pos).setVisited(true);
+        cells.get(pos).setNorth(true);
+        cells.get(pos).setMirror();
+        cells.get(new Pair<>(0, 1)).setSouth(true);
+        cells.get(new Pair<>(0, 1)).setBlack();
     }
 
     public void addCell(int x, int y) {
-        Rectangle balance = new Rectangle(-x * size - size / 2, -y * size - size / 2, size, size);
-        balance.setFill(Color.TRANSPARENT);
-        Cell c = new Cell(x * size - size / 2, y * size - size / 2, size);
-        c.setColor(cellBorder);
-        child.addAll(c, balance);
+        Cell c = new Cell(x * size - size / 2, y * size - size / 2,-x * size - size / 2, -y * size - size / 2, size);
+        child.add(c);
         robot.toFront();
         cells.put(new Pair<>(x, y), c);
     }
@@ -63,8 +63,8 @@ public class Floor extends Group {
         robotTransition.setToY(pos.value * size);
         floorTransition.setToY(pos.value * size);
 
-
         robotTransition.play();
         floorTransition.play();
+        cells.get(pos).setVisited(true);
     }
 }
